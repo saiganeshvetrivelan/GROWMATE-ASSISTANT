@@ -1,7 +1,8 @@
+
 'use client';
 
 import * as React from 'react';
-import { Bot, User, CornerDownLeft, CircleNotch } from 'lucide-react';
+import { Bot, User, CornerDownLeft, Loader2 } from 'lucide-react';
 import { useFormState, useFormStatus } from 'react-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -30,7 +31,7 @@ function SubmitButton() {
       disabled={pending}
     >
       {pending ? (
-        <CircleNotch className="animate-spin" />
+        <Loader2 className="animate-spin" />
       ) : (
         <CornerDownLeft className="size-4" />
       )}

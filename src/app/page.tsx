@@ -11,6 +11,9 @@ import {
   Gauge,
   AlertTriangle,
   Zap,
+  Leaf,
+  Flower,
+  ShieldCheck,
 } from 'lucide-react';
 import { SensorCard } from '@/components/dashboard/sensor-card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -47,6 +50,24 @@ export default function Dashboard() {
           value="68%"
           icon={<Gauge className="size-6 text-primary" />}
           description="Slightly high, monitor for fungus"
+        />
+        <SensorCard
+          title="Nitrogen (N)"
+          value="150 ppm"
+          icon={<Leaf className="size-6 text-primary" />}
+          description="Healthy nitrogen levels"
+        />
+        <SensorCard
+          title="Phosphorus (P)"
+          value="40 ppm"
+          icon={<Flower className="size-6 text-primary" />}
+          description="Good for root development"
+        />
+        <SensorCard
+          title="Potassium (K)"
+          value="200 ppm"
+          icon={<ShieldCheck className="size-6 text-primary" />}
+          description="Supports overall plant health"
         />
 
         <IrrigationCard fieldId="field-001" />

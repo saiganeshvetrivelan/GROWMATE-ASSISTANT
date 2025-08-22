@@ -17,7 +17,6 @@ import {
 } from 'lucide-react';
 import { SensorCard } from '@/components/dashboard/sensor-card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { IrrigationCard } from '@/components/dashboard/irrigation-card';
 
 export default function Dashboard() {
   return (
@@ -69,8 +68,6 @@ export default function Dashboard() {
           icon={<ShieldCheck className="size-6 text-primary" />}
           description="Supports overall plant health"
         />
-
-        <IrrigationCard fieldId="field-001" />
 
         <Card className="lg:col-span-3 xl:col-span-4">
           <CardHeader>

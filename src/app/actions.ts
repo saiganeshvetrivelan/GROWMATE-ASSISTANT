@@ -3,7 +3,6 @@
 import { z } from 'zod';
 import { irrigationRecommendation } from '@/ai/flows/irrigation-recommendation';
 import { growMateAssistant } from '@/ai/flows/growmate-assistant';
-import { voiceAssistance } from '@/ai/flows/voice-assistance';
 import { revalidatePath } from 'next/cache';
 
 // Irrigation Recommendation Action
@@ -68,31 +67,6 @@ export async function getAssistantResponse(prevState: any, formData: FormData) {
     return {
       response: null,
       error: 'Failed to get response from assistant.',
-    };
-  }
-}
-
-// Voice Assistance Action
-export async function getVoiceResponse(prevState: any, formData: FormData) {
-  const command = formData.get('command') as string;
-  if (!command) {
-    return {
-      response: '',
-      error: 'Command cannot be empty.',
-    };
-  }
-
-  try {
-    const result = await voiceAssistance({ voiceCommand: command });
-    return {
-      response: result.response,
-      error: null,
-    };
-  } catch (error) {
-    console.error(error);
-    return {
-      response: '',
-      error: 'Failed to process voice command.',
     };
   }
 }

@@ -4,47 +4,52 @@ import { z } from 'zod';
 import { growMateAssistant } from '@/ai/flows/growmate-assistant';
 import { revalidatePath } from 'next/cache';
 
-type State = { status: 'idle' | 'ok' | 'error'; message: string };
+// Irrigation Action using useActionState
+type IrrigationState = { status: 'idle' | 'ok' | 'error'; message: string };
 
-// This server action is a placeholder you can replace later.
 export async function getIrrigationRecommendation(
-  prevState: State,
+  prevState: IrrigationState,
   formData: FormData
-): Promise<State> {
-  'use server';
-  // TODO: call your backend or Cloud Function here.
-  // Example:
-  // const fieldId = formData.get('fieldId') as string;
-  // const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/recommendations/run', { method: 'POST', body: JSON.stringify({ fieldId }) });
-  // if (!res.ok) return { status: 'error', message: 'Failed to create plan' };
-  // const data = await res.json();
-  // return { status: 'ok', message: data.actions?. ?? 'Plan created' };
-  console.log('Received fieldId:', formData.get('fieldId'));
-  return { status: 'ok', message: 'Demo: irrigation plan created' };
+): Promise<IrrigationState> {
+  try {
+    const fieldId = String(formData.get('fieldId') ?? '');
+    // Placeholder for actual API call
+    console.log(`Creating irrigation plan for: ${fieldId}`);
+    // Simulate network delay
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    return {
+      status: 'ok',
+      message: `Demo: plan created for ${fieldId || 'field'}`,
+    };
+  } catch (e: any) {
+    return { status: 'error', message: e?.message || 'Error creating plan' };
+  }
 }
 
-// GrowMate Assistant Action
-export async function getAssistantResponse(prevState: any, formData: FormData) {
-  const query = formData.get('query') as string;
-  if (!query) {
-    return {
-      response: null,
-      error: 'Query cannot be empty.',
-    };
-  }
+// GrowMate Assistant Action using useActionState
+type Message = { role: 'user' | 'assistant'; content: string };
+type ChatState = { history: Message[]; error?: string };
+
+export async function getAssistantResponse(
+  prevState: ChatState,
+  formData: FormData
+): Promise<ChatState> {
+  const query = String(formData.get('query') ?? '').trim();
+  if (!query) return prevState;
 
   try {
     const result = await growMateAssistant({ query });
     revalidatePath('/assistant');
-    return {
-      response: result.response,
-      error: null,
-    };
+
+    const newHistory: Message[] = [
+      ...prevState.history,
+      { role: 'user', content: query },
+      { role: 'assistant', content: result.response },
+    ];
+
+    return { history: newHistory };
   } catch (error) {
     console.error(error);
-    return {
-      response: null,
-      error: 'Failed to get response from assistant.',
-    };
+    return { ...prevState, error: 'Failed to get response from assistant.' };
   }
 }

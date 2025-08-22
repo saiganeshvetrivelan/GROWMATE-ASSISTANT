@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { getIrrigationRecommendation } from '@/app/actions';
+import { Loader2 } from 'lucide-react';
 
 type State = { status: 'idle' | 'ok' | 'error'; message: string };
 
@@ -39,7 +40,14 @@ export function IrrigationCard({ fieldId }: { fieldId: string }) {
         </CardContent>
         <CardFooter>
           <Button type="submit" className="w-full" disabled={isPending}>
-            {isPending ? 'Generating...' : 'Create irrigation plan'}
+            {isPending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Generating...
+              </>
+            ) : (
+              'Create irrigation plan'
+            )}
           </Button>
         </CardFooter>
       </form>

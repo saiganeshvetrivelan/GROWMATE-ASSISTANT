@@ -1,25 +1,18 @@
-
 'use client';
-
 import * as React from 'react';
 import { Bot, User, CornerDownLeft, Loader2 } from 'lucide-react';
-import { useFormState, useFormStatus } from 'react-dom';
+import { useActionState, useFormStatus } from 'react-dom';
+
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { getAssistantResponse } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 
-type Message = {
-  role: 'user' | 'assistant';
-  content: string;
-};
-
-const initialState = {
-  response: null,
-  error: null,
-};
+type Message = { role: 'user' | 'assistant'; content: string };
+type ChatState = { history: Message[]; error?: string };
+const initialState: ChatState = { history: [] };
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -40,9 +33,11 @@ function SubmitButton() {
   );
 }
 
-export function ChatInterface() {
-  const [messages, setMessages] = React.useState<Message[]>([]);
-  const [state, formAction] = useFormState(getAssistantResponse, initialState);
+export function ChatInterface({ fieldId }: { fieldId: string }) {
+  const [state, formAction, isPending] = useActionState<ChatState, FormData>(
+    getAssistantResponse,
+    initialState
+  );
   const formRef = React.useRef<HTMLFormElement>(null);
   const scrollAreaRef = React.useRef<HTMLDivElement>(null);
   const { toast } = useToast();
@@ -55,13 +50,7 @@ export function ChatInterface() {
         variant: 'destructive',
       });
     }
-    if (state.response) {
-      setMessages((prev) => [
-        ...prev,
-        { role: 'assistant', content: state.response as string },
-      ]);
-    }
-  }, [state, toast]);
+  }, [state.error, toast]);
 
   React.useEffect(() => {
     if (scrollAreaRef.current) {
@@ -70,19 +59,16 @@ export function ChatInterface() {
         behavior: 'smooth',
       });
     }
-  }, [messages]);
+  }, [state.history]);
 
-  const handleFormSubmit = (formData: FormData) => {
-    const query = formData.get('query') as string;
-    if (!query) return;
-
-    setMessages((prev) => [...prev, { role: 'user', content: query }]);
+  const handleFormAction = (formData: FormData) => {
+    formData.set('fieldId', fieldId);
     formAction(formData);
     formRef.current?.reset();
   };
 
   return (
-    <div className="h-full flex flex-col p-4 md:p-6 lg:p-8">
+    <div className="h-full flex flex-col">
       <ScrollArea className="flex-1 mb-4 pr-4" ref={scrollAreaRef}>
         <div className="space-y-6">
           <div className="flex items-start gap-4">
@@ -99,7 +85,7 @@ export function ChatInterface() {
               </p>
             </div>
           </div>
-          {messages.map((message, index) => (
+          {state.history.map((message, index) => (
             <div
               key={index}
               className={`flex items-start gap-4 ${
@@ -115,9 +101,7 @@ export function ChatInterface() {
               )}
               <div
                 className={`p-4 rounded-lg border max-w-xl ${
-                  message.role === 'user'
-                    ? 'bg-primary/10'
-                    : 'bg-card'
+                  message.role === 'user' ? 'bg-primary/10' : 'bg-card'
                 }`}
               >
                 <p
@@ -143,11 +127,13 @@ export function ChatInterface() {
         </div>
       </ScrollArea>
       <div className="relative">
-        <form ref={formRef} action={handleFormSubmit}>
+        <form ref={formRef} action={handleFormAction}>
           <Input
             name="query"
             placeholder="Ask about your farm..."
             className="pr-12"
+            autoComplete="off"
+            disabled={isPending}
             required
           />
           <SubmitButton />

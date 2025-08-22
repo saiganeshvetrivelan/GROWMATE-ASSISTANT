@@ -1,48 +1,26 @@
 'use server';
 
 import { z } from 'zod';
-import { irrigationRecommendation } from '@/ai/flows/irrigation-recommendation';
 import { growMateAssistant } from '@/ai/flows/growmate-assistant';
 import { revalidatePath } from 'next/cache';
 
-// Irrigation Recommendation Action
-const irrigationSchema = z.object({
-  soilMoisture: z.coerce.number(),
-  temperature: z.coerce.number(),
-  humidity: z.coerce.number(),
-});
+type State = { status: 'idle' | 'ok' | 'error'; message: string };
 
-export async function getIrrigationRecommendation(prevState: any, formData: FormData) {
-  const validatedFields = irrigationSchema.safeParse(
-    Object.fromEntries(formData.entries())
-  );
-
-  if (!validatedFields.success) {
-    return {
-      recommendation: null,
-      error: 'Invalid input data.',
-    };
-  }
-  
-  try {
-    const result = await irrigationRecommendation({
-      ...validatedFields.data,
-      weatherForecast: 'Sunny with a chance of afternoon showers.',
-      cropType: 'Corn',
-      fieldSizeAcres: 50,
-    });
-    revalidatePath('/');
-    return {
-      recommendation: result,
-      error: null,
-    };
-  } catch (error) {
-    console.error(error);
-    return {
-      recommendation: null,
-      error: 'Failed to get irrigation recommendation.',
-    };
-  }
+// This server action is a placeholder you can replace later.
+export async function getIrrigationRecommendation(
+  prevState: State,
+  formData: FormData
+): Promise<State> {
+  'use server';
+  // TODO: call your backend or Cloud Function here.
+  // Example:
+  // const fieldId = formData.get('fieldId') as string;
+  // const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/recommendations/run', { method: 'POST', body: JSON.stringify({ fieldId }) });
+  // if (!res.ok) return { status: 'error', message: 'Failed to create plan' };
+  // const data = await res.json();
+  // return { status: 'ok', message: data.actions?. ?? 'Plan created' };
+  console.log('Received fieldId:', formData.get('fieldId'));
+  return { status: 'ok', message: 'Demo: irrigation plan created' };
 }
 
 // GrowMate Assistant Action

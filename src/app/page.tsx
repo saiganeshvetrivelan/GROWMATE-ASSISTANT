@@ -49,7 +49,7 @@ export default function Dashboard() {
           description="Slightly high, monitor for fungus"
         />
 
-        <IrrigationCard />
+        <IrrigationCard fieldId="field-001" />
 
         <Card className="lg:col-span-3 xl:col-span-4">
           <CardHeader>

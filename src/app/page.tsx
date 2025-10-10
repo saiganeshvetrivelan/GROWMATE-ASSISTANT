@@ -16,7 +16,6 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import { SensorCard } from '@/components/dashboard/sensor-card';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { getThingSpeakData } from '@/lib/thingspeak';
 
 export default async function Dashboard() {

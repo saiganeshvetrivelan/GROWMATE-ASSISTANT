@@ -49,39 +49,42 @@ export type SensorData = {
   potassium: number;
 };
 
+function getMockData(): SensorData {
+  const latestFeed = MOCK_DATA.feeds[0];
+  return {
+    temperature: parseFloat(latestFeed.field1),
+    humidity: parseFloat(latestFeed.field2),
+    soil_moisture: parseFloat(latestFeed.field3),
+    nitrogen: parseFloat(latestFeed.field4),
+    phosphorus: parseFloat(latestFeed.field5),
+    potassium: parseFloat(latestFeed.field6),
+  };
+}
+
 export async function getThingSpeakData(): Promise<SensorData> {
   const channelId = process.env.THINGSPEAK_CHANNEL_ID;
   const apiKey = process.env.THINGSPEAK_API_KEY;
 
   if (!channelId || !apiKey) {
     console.log('ThingSpeak credentials not found, using mock data.');
-    const latestFeed = MOCK_DATA.feeds[0];
-    return {
-      temperature: parseFloat(latestFeed.field1),
-      humidity: parseFloat(latestFeed.field2),
-      soil_moisture: parseFloat(latestFeed.field3),
-      nitrogen: parseFloat(latestFeed.field4),
-      phosphorus: parseFloat(latestFeed.field5),
-      potassium: parseFloat(latestFeed.field6),
-    };
+    return getMockData();
   }
 
   try {
-    const response = await fetch(`https://api.thingspeak.com/channels/${channelId}/feeds.json?api_key=${apiKey}&results=1`);
+    const response = await fetch(`https://api.thingspeak.com/channels/${channelId}/feeds.json?api_key=${apiKey}&results=1`, { cache: 'no-store' });
     if (!response.ok) {
         console.error('Error fetching from ThingSpeak, using mock data. Status: ', response.status);
-        const latestFeed = MOCK_DATA.feeds[0];
-        return {
-            temperature: parseFloat(latestFeed.field1),
-            humidity: parseFloat(latestFeed.field2),
-            soil_moisture: parseFloat(latestFeed.field3),
-            nitrogen: parseFloat(latestFeed.field4),
-            phosphorus: parseFloat(latestFeed.field5),
-            potassium: parseFloat(latestFeed.field6),
-        };
+        return getMockData();
     }
     const data = await response.json();
     const latestFeed = data.feeds[0];
+
+    // If any field is null, it means the data is not being sent from ThingSpeak yet.
+    // In this case, we'll return mock data to avoid breaking the UI.
+    if (Object.values(latestFeed).some(field => field === null)) {
+      console.warn('One or more ThingSpeak fields are null, falling back to mock data.');
+      return getMockData();
+    }
 
     return {
       temperature: parseFloat(latestFeed.field1),
@@ -93,14 +96,6 @@ export async function getThingSpeakData(): Promise<SensorData> {
     };
   } catch (error) {
     console.error('Error fetching from ThingSpeak, using mock data.', error);
-    const latestFeed = MOCK_DATA.feeds[0];
-    return {
-        temperature: parseFloat(latestFeed.field1),
-        humidity: parseFloat(latestFeed.field2),
-        soil_moisture: parseFloat(latestFeed.field3),
-        nitrogen: parseFloat(latestFeed.field4),
-        phosphorus: parseFloat(latestFeed.field5),
-        potassium: parseFloat(latestFeed.field6),
-    };
+    return getMockData();
   }
 }

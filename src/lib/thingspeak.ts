@@ -50,23 +50,57 @@ export type SensorData = {
 };
 
 export async function getThingSpeakData(): Promise<SensorData> {
-  // In a real application, you would make a fetch request to the ThingSpeak API.
-  // For now, we are returning mock data.
-  //
-  // const channelId = process.env.THINGSPEAK_CHANNEL_ID;
-  // const apiKey = process.env.THINGSPEAK_API_KEY;
-  // const response = await fetch(`https://api.thingspeak.com/channels/${channelId}/feeds.json?api_key=${apiKey}&results=1`);
-  // const data = await response.json();
-  // const latestFeed = data.feeds[0];
+  const channelId = process.env.THINGSPEAK_CHANNEL_ID;
+  const apiKey = process.env.THINGSPEAK_API_KEY;
 
-  const latestFeed = MOCK_DATA.feeds[0];
+  if (!channelId || !apiKey) {
+    console.log('ThingSpeak credentials not found, using mock data.');
+    const latestFeed = MOCK_DATA.feeds[0];
+    return {
+      temperature: parseFloat(latestFeed.field1),
+      humidity: parseFloat(latestFeed.field2),
+      soil_moisture: parseFloat(latestFeed.field3),
+      nitrogen: parseFloat(latestFeed.field4),
+      phosphorus: parseFloat(latestFeed.field5),
+      potassium: parseFloat(latestFeed.field6),
+    };
+  }
 
-  return {
-    temperature: parseFloat(latestFeed.field1),
-    humidity: parseFloat(latestFeed.field2),
-    soil_moisture: parseFloat(latestFeed.field3),
-    nitrogen: parseFloat(latestFeed.field4),
-    phosphorus: parseFloat(latestFeed.field5),
-    potassium: parseFloat(latestFeed.field6),
-  };
+  try {
+    const response = await fetch(`https://api.thingspeak.com/channels/${channelId}/feeds.json?api_key=${apiKey}&results=1`);
+    if (!response.ok) {
+        console.error('Error fetching from ThingSpeak, using mock data. Status: ', response.status);
+        const latestFeed = MOCK_DATA.feeds[0];
+        return {
+            temperature: parseFloat(latestFeed.field1),
+            humidity: parseFloat(latestFeed.field2),
+            soil_moisture: parseFloat(latestFeed.field3),
+            nitrogen: parseFloat(latestFeed.field4),
+            phosphorus: parseFloat(latestFeed.field5),
+            potassium: parseFloat(latestFeed.field6),
+        };
+    }
+    const data = await response.json();
+    const latestFeed = data.feeds[0];
+
+    return {
+      temperature: parseFloat(latestFeed.field1),
+      humidity: parseFloat(latestFeed.field2),
+      soil_moisture: parseFloat(latestFeed.field3),
+      nitrogen: parseFloat(latestFeed.field4),
+      phosphorus: parseFloat(latestFeed.field5),
+      potassium: parseFloat(latestFeed.field6),
+    };
+  } catch (error) {
+    console.error('Error fetching from ThingSpeak, using mock data.', error);
+    const latestFeed = MOCK_DATA.feeds[0];
+    return {
+        temperature: parseFloat(latestFeed.field1),
+        humidity: parseFloat(latestFeed.field2),
+        soil_moisture: parseFloat(latestFeed.field3),
+        nitrogen: parseFloat(latestFeed.field4),
+        phosphorus: parseFloat(latestFeed.field5),
+        potassium: parseFloat(latestFeed.field6),
+    };
+  }
 }

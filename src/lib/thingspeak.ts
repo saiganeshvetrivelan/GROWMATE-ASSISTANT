@@ -71,18 +71,29 @@ export async function getThingSpeakData(): Promise<SensorData> {
   }
 
   try {
-    const response = await fetch(`https://api.thingspeak.com/channels/${channelId}/feeds.json?api_key=${apiKey}&results=1`, { cache: 'no-store' });
+    const response = await fetch(
+      `https://api.thingspeak.com/channels/${channelId}/feeds.json?api_key=${apiKey}&results=1`,
+      { cache: 'no-store' }
+    );
     if (!response.ok) {
-        console.error('Error fetching from ThingSpeak, using mock data. Status: ', response.status);
-        return getMockData();
+      console.error(
+        'Error fetching from ThingSpeak, using mock data. Status: ',
+        response.status
+      );
+      return getMockData();
     }
     const data = await response.json();
     const latestFeed = data.feeds[0];
 
     // If any field is null, it means the data is not being sent from ThingSpeak yet.
     // In this case, we'll return mock data to avoid breaking the UI.
-    if (!latestFeed || Object.values(latestFeed).some(field => field === null)) {
-      console.warn('One or more ThingSpeak fields are null or feed is empty, falling back to mock data.');
+    if (
+      !latestFeed ||
+      Object.values(latestFeed).some(field => field === null)
+    ) {
+      console.warn(
+        'One or more ThingSpeak fields are null or feed is empty, falling back to mock data.'
+      );
       return getMockData();
     }
 

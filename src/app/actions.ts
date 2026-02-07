@@ -24,6 +24,30 @@ export async function getIrrigationRecommendation(
   }
 }
 
+// Voice Assistant action
+type VoiceState = { response: string; error: string | null };
+
+export async function getVoiceResponse(
+  prevState: VoiceState,
+  formData: FormData
+): Promise<VoiceState> {
+  try {
+    const command = String(formData.get('command') ?? '');
+    if (!command) {
+      return { response: '', error: 'Command cannot be empty.' };
+    }
+
+    // This is a demo implementation.
+    return {
+      response: `This is a demo response to your command: "${command}"`,
+      error: null,
+    };
+  } catch (e: any) {
+    return { response: '', error: e.message || 'Failed to get response.' };
+  }
+}
+
+
 // GrowMate Assistant Action using useActionState
 type Message = {
   role: 'user' | 'assistant';

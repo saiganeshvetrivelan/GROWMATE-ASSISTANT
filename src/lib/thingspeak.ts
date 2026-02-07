@@ -18,8 +18,8 @@ const DEFAULT_SENSOR_DATA: SensorData = {
 };
 
 export async function getThingSpeakData(): Promise<SensorData> {
-  const channelId = process.env.3110431;
-  const apiKey = process.env.NLGV7LTYLQBQQTRM;
+  const channelId = process.env.THINGSPEAK_CHANNEL_ID;
+  const apiKey = process.env.THINGSPEAK_API_KEY;
 
   if (!channelId || !apiKey) {
     console.error('ThingSpeak credentials are not configured in .env file.');

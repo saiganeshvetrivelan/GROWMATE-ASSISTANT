@@ -11,7 +11,11 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { getAssistantResponse } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 
-type Message = { role: 'user' | 'assistant'; content: string };
+type Message = {
+  role: 'user' | 'assistant';
+  content: string;
+  reasoning_details?: any;
+};
 type ChatState = { history: Message[]; error?: string };
 const initialState: ChatState = { history: [] };
 

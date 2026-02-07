@@ -1,7 +1,5 @@
 'use server';
 
-import { z } from 'zod';
-import { growMateAssistant } from '@/ai/flows/growmate-assistant';
 import { revalidatePath } from 'next/cache';
 
 // Irrigation Action using useActionState
@@ -27,7 +25,11 @@ export async function getIrrigationRecommendation(
 }
 
 // GrowMate Assistant Action using useActionState
-type Message = { role: 'user' | 'assistant'; content: string };
+type Message = {
+  role: 'user' | 'assistant';
+  content: string;
+  reasoning_details?: any;
+};
 type ChatState = { history: Message[]; error?: string };
 
 export async function getAssistantResponse(
@@ -37,19 +39,72 @@ export async function getAssistantResponse(
   const query = String(formData.get('query') ?? '').trim();
   if (!query) return prevState;
 
+  const userMessage: Message = { role: 'user', content: query };
+
+  const apiMessages = [...prevState.history, userMessage].map(
+    ({ role, content, reasoning_details }) => {
+      const msg: any = { role, content };
+      if (role === 'assistant' && reasoning_details) {
+        msg.reasoning_details = reasoning_details;
+      }
+      return msg;
+    }
+  );
+
+  const body: any = {
+    model: 'openai/gpt-oss-20b:free',
+    messages: apiMessages,
+  };
+
+  if (apiMessages.length === 1) {
+    body.reasoning = { enabled: true };
+  }
+
   try {
-    const result = await growMateAssistant({ query });
-    revalidatePath('/assistant');
+    const response = await fetch(
+      'https://openrouter.ai/api/v1/chat/completions',
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('OpenRouter API Error:', errorData);
+      return {
+        history: [...prevState.history, userMessage],
+        error: `API Error: ${errorData.error?.message || response.statusText}`,
+      };
+    }
+
+    const result = await response.json();
+    const assistantMessageFromApi = result.choices[0].message;
+
+    const assistantMessage: Message = {
+      role: 'assistant',
+      content: assistantMessageFromApi.content,
+      reasoning_details: assistantMessageFromApi.reasoning_details,
+    };
 
     const newHistory: Message[] = [
       ...prevState.history,
-      { role: 'user', content: query },
-      { role: 'assistant', content: result.response },
+      userMessage,
+      assistantMessage,
     ];
 
+    revalidatePath('/assistant');
+
     return { history: newHistory };
-  } catch (error) {
+  } catch (error: any) {
     console.error(error);
-    return { ...prevState, error: 'Failed to get response from assistant.' };
+    return {
+      history: [...prevState.history, userMessage],
+      error: error.message || 'Failed to get response from assistant.',
+    };
   }
 }

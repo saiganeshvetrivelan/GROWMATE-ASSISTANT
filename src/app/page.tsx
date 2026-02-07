@@ -21,6 +21,7 @@ import { getThingSpeakData } from '@/lib/thingspeak';
 import { getDashboardInsights } from '@/lib/dashboard-insights';
 import { AiRecommendationsCard } from '@/components/dashboard/ai-recommendations-card';
 import { ActiveAlertsCard } from '@/components/dashboard/active-alerts-card';
+import { RefreshButton } from '@/components/dashboard/refresh-button';
 
 export default async function Dashboard() {
   const sensorData = await getThingSpeakData();
@@ -30,6 +31,7 @@ export default async function Dashboard() {
     <div className="flex flex-col w-full">
       <header className="sticky top-0 z-10 flex h-16 items-center justify-between gap-4 border-b bg-background/80 px-4 backdrop-blur-sm md:px-6 lg:px-8">
         <h1 className="text-xl font-semibold text-foreground">Dashboard</h1>
+        <RefreshButton />
       </header>
       <main className="flex-1 p-4 md:p-6 lg:p-8 grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 auto-rows-max">
         <div className="lg:col-span-3 xl:col-span-4">

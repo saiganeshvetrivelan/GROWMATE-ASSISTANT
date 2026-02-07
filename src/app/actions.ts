@@ -3,6 +3,10 @@
 import { revalidatePath } from 'next/cache';
 import { getThingSpeakData } from '@/lib/thingspeak';
 
+export async function refreshDashboard() {
+  revalidatePath('/');
+}
+
 // Irrigation Action using useActionState
 type IrrigationState = { status: 'idle' | 'ok' | 'error'; message: string };
 

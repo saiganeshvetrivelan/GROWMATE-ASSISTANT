@@ -1,6 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { getThingSpeakData } from '@/lib/thingspeak';
 
 // Irrigation Action using useActionState
 type IrrigationState = { status: 'idle' | 'ok' | 'error'; message: string };
@@ -50,7 +51,7 @@ export async function getVoiceResponse(
 
 // GrowMate Assistant Action using useActionState
 type Message = {
-  role: 'user' | 'assistant';
+  role: 'user' | 'assistant' | 'system';
   content: string;
   reasoning_details?: any;
 };
@@ -65,7 +66,26 @@ export async function getAssistantResponse(
 
   const userMessage: Message = { role: 'user', content: query };
 
-  const apiMessages = [...prevState.history, userMessage].map(
+  // Fetch real-time sensor data
+  const sensorData = await getThingSpeakData();
+
+  // Create a system message with the real-time data
+  const systemMessageContent = `You are GrowMate, an expert AI farming assistant. Here is the current real-time data from the farm sensors:
+- Temperature: ${sensorData.temperature}°C
+- Humidity: ${sensorData.humidity}%
+- Soil Moisture: ${sensorData.soil_moisture}%
+- Nitrogen (N): ${sensorData.nitrogen} ppm
+- Phosphorus (P): ${sensorData.phosphorus} ppm
+- Potassium (K): ${sensorData.potassium} ppm
+
+Use this data to answer the user's questions. Be concise and helpful.`;
+
+  const systemMessage: Message = {
+    role: 'system',
+    content: systemMessageContent,
+  };
+
+  const apiMessages = [systemMessage, ...prevState.history, userMessage].map(
     ({ role, content, reasoning_details }) => {
       const msg: any = { role, content };
       if (role === 'assistant' && reasoning_details) {
@@ -80,7 +100,7 @@ export async function getAssistantResponse(
     messages: apiMessages,
   };
 
-  if (apiMessages.length === 1) {
+  if (prevState.history.length === 0) {
     body.reasoning = { enabled: true };
   }
 

@@ -66,26 +66,7 @@ export async function getAssistantResponse(
 
   const userMessage: Message = { role: 'user', content: query };
 
-  // Fetch real-time sensor data
-  const sensorData = await getThingSpeakData();
-
-  // Create a system message with the real-time data
-  const systemMessageContent = `You are GrowMate, an expert AI farming assistant. Here is the current real-time data from the farm sensors:
-- Temperature: ${sensorData.temperature}°C
-- Humidity: ${sensorData.humidity}%
-- Soil Moisture: ${sensorData.soil_moisture}%
-- Nitrogen (N): ${sensorData.nitrogen} ppm
-- Phosphorus (P): ${sensorData.phosphorus} ppm
-- Potassium (K): ${sensorData.potassium} ppm
-
-Use this data to answer the user's questions. Be concise and helpful.`;
-
-  const systemMessage: Message = {
-    role: 'system',
-    content: systemMessageContent,
-  };
-
-  const apiMessages = [systemMessage, ...prevState.history, userMessage].map(
+  const apiMessages = [...prevState.history, userMessage].map(
     ({ role, content, reasoning_details }) => {
       const msg: any = { role, content };
       if (role === 'assistant' && reasoning_details) {

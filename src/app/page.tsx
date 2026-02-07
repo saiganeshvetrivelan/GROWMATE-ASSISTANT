@@ -14,12 +14,17 @@ import {
   Leaf,
   Flower,
   ShieldCheck,
+  Lightbulb,
 } from 'lucide-react';
 import { SensorCard } from '@/components/dashboard/sensor-card';
 import { getThingSpeakData } from '@/lib/thingspeak';
+import { getDashboardInsights } from '@/lib/dashboard-insights';
+import { AiRecommendationsCard } from '@/components/dashboard/ai-recommendations-card';
+import { ActiveAlertsCard } from '@/components/dashboard/active-alerts-card';
 
 export default async function Dashboard() {
   const sensorData = await getThingSpeakData();
+  const insights = await getDashboardInsights();
 
   return (
     <div className="flex flex-col w-full">
@@ -72,6 +77,11 @@ export default async function Dashboard() {
           icon={<ShieldCheck className="size-6 text-primary" />}
           description="Supports overall plant health"
         />
+
+        <div className="lg:col-span-3 xl:col-span-4 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <AiRecommendationsCard recommendations={insights.recommendations} />
+            <ActiveAlertsCard alerts={insights.alerts} />
+        </div>
       </main>
     </div>
   );
